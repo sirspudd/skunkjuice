@@ -48,16 +48,7 @@ Item {
     property variant selectedWindow: null
     property bool hasFullscreenWindow: typeof compositor != "undefined" && compositor.fullscreenSurface !== null
 
-    Image {
-        id: background
-        Behavior on opacity {
-            NumberAnimation { easing.type: Easing.InCubic; duration: 400; }
-        }
-        anchors.fill: parent
-        fillMode: Image.Tile
-        source: "background.jpg"
-        smooth: true
-    }
+    BackgroundSwirls {}
 
     MouseArea {
         anchors.fill: parent
