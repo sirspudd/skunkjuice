@@ -48,7 +48,7 @@ Item {
     property variant selectedWindow: null
     property bool hasFullscreenWindow: typeof compositor != "undefined" && compositor.fullscreenSurface !== null
 
-    BackgroundSwirls {}
+    BackgroundSwirls { id: background }
 
     MouseArea {
         anchors.fill: parent
