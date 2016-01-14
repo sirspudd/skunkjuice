@@ -20,3 +20,6 @@ target.path = $$[QT_INSTALL_EXAMPLES]/wayland/qml-compositor
 sources.files = $$OTHER_FILES $$SOURCES $$HEADERS $$RESOURCES $$FORMS qml-compositor.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/wayland/qml-compositor
 INSTALLS += target sources
+
+RESOURCES += \
+    pi-compositor.qrc
