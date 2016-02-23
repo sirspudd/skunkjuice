@@ -55,6 +55,8 @@
 #include <QQuickItem>
 #include <QQuickView>
 
+#include <QSurfaceFormat>
+
 class QmlCompositor : public QQuickView, public QWaylandQuickCompositor
 {
     Q_OBJECT
@@ -145,6 +147,13 @@ private:
 
 int main(int argc, char *argv[])
 {
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setAlphaBufferSize(8);
+    format.setRedBufferSize(8);
+    format.setGreenBufferSize(8);
+    format.setBlueBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(format);
+
     QGuiApplication app(argc, argv);
 
     QmlCompositor compositor;
