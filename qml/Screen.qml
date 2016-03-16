@@ -38,18 +38,46 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QUrl>
-#include <QtCore/QDebug>
+import QtQuick 2.5
+import QtQuick.Window 2.2
+import QtWayland.Compositor 1.0
 
-#include <QtGui/QGuiApplication>
+WaylandOutput {
+    id: output
+    property alias surfaceArea: background
+    window: Window {
+        id: screen
 
-#include <QtQml/QQmlApplicationEngine>
+        property QtObject output
 
-int main(int argc, char *argv[])
-{
-    QGuiApplication app(argc, argv);
+        width: 1024
+        height: 760
+        visible: true
 
-    QQmlApplicationEngine appEngine(QUrl("qrc:///qml/main.qml"));
+        WaylandMouseTracker {
+            id: mouseTracker
+            anchors.fill: parent
 
-    return app.exec();
+            enableWSCursor: true
+            Image {
+                id: background
+                anchors.fill: parent
+                fillMode: Image.Tile
+                source: "qrc:/images/background.jpg"
+                smooth: true
+            }
+            WaylandCursorItem {
+                id: cursor
+                inputEventsEnabled: false
+                x: mouseTracker.mouseX - hotspotX
+                y: mouseTracker.mouseY - hotspotY
+
+                inputDevice: output.compositor.defaultInputDevice
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+Alt+Backspace"
+            onActivated: Qt.quit()
+        }
+    }
 }

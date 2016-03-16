@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -39,52 +39,48 @@
 ****************************************************************************/
 
 import QtQuick 2.0
+import QtWayland.Compositor 1.0
 
-ShaderEffect {
-    property variant source: null;
-    property color color: "#ffffff"
-    property real blend;
+WaylandCompositor {
+    id: comp
 
-    onSourceChanged: {
-        if (source != null) {
-            source.setPaintEnabled(false);
+    property var primarySurfacesArea: null
+
+    Screen {
+        compositor: comp
+    }
+
+    Component {
+        id: chromeComponent
+        Chrome {
         }
     }
 
-    property string vShaderInvertedY: "
-    uniform highp mat4 qt_Matrix;
-    attribute highp vec4 qt_Vertex;
-    attribute highp vec2 qt_MultiTexCoord0;
-    varying highp vec2 qt_TexCoord0;
-    void main() {
-        qt_TexCoord0 = qt_MultiTexCoord0;
-        gl_Position = qt_Matrix * qt_Vertex;
+    Component {
+        id: surfaceComponent
+        WaylandSurface {
+        }
     }
-    "
-    property string vShader: "
-    uniform highp mat4 qt_Matrix;
-    attribute highp vec4 qt_Vertex;
-    attribute highp vec2 qt_MultiTexCoord0;
-    varying highp vec2 qt_TexCoord0;
-    void main() {
-        qt_TexCoord0 = vec2(0, 1) + qt_MultiTexCoord0 * vec2(1, -1);
-        gl_Position = qt_Matrix * qt_Vertex;
-    }
-    "
 
-    vertexShader: source && source.isYInverted ? vShaderInvertedY : vShader
+    extensions: [
+        Shell {
+            id: defaultShell
 
-    fragmentShader: "
-    uniform lowp sampler2D source;
-    uniform highp float qt_Opacity;
-    uniform highp vec4 color;
-    uniform highp float blend;
-    varying highp vec2 qt_TexCoord0;
-    void main() {
-        highp vec4 sourceColor = texture2D(source, qt_TexCoord0);
-        highp vec3 delta = sourceColor.rgb - vec3(0.5);
-        highp vec3 lowerContrast = vec3(0.5) + 0.4 * delta;
-        gl_FragColor = qt_Opacity * mix(sourceColor, color * sourceColor.a * dot(lowerContrast, vec3(11, 16, 5) * (1. /  32.)), blend);
+
+            onCreateShellSurface: {
+                var item = chromeComponent.createObject(defaultOutput.surfaceArea, { "surface": surface } );
+                item.shellSurface.initialize(defaultShell, surface, resource);
+            }
+
+            Component.onCompleted: {
+                initialize();
+            }
+        }
+    ]
+
+    onCreateSurface: {
+        var surface = surfaceComponent.createObject(comp, { } );
+        surface.initialize(comp, client, id, version);
+
     }
-    "
 }

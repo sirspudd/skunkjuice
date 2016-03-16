@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -39,25 +39,35 @@
 ****************************************************************************/
 
 import QtQuick 2.0
+import QtWayland.Compositor 1.0
 
-Item {
-    id: chrome
-    anchors.fill: parent
+ShellSurfaceItem {
+    id: rootChrome
 
-    property variant window: parent;
-    property bool selected: root.selectedWindow === window
-
-    MouseArea {
-        anchors.fill: parent
-        enabled: !window.focus
-        hoverEnabled: !window.focus
-        onClicked: {
-            if (selected) {
-                window.takeFocus();
-            } else {
-                root.selectedWindow = window
-                root.focus = true
-            }
-        }
+    shellSurface: ShellSurface {
     }
+
+    onSurfaceDestroyed: {
+        view.bufferLock = true;
+        destroyAnimation.start();
+    }
+
+    SequentialAnimation {
+        id: destroyAnimation
+        ParallelAnimation {
+            NumberAnimation { target: scaleTransform; property: "yScale"; to: 2/height; duration: 150 }
+            NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.4; duration: 150 }
+        }
+        NumberAnimation { target: scaleTransform; property: "xScale"; to: 0; duration: 150 }
+        ScriptAction { script: { rootChrome.destroy(); } }
+    }
+
+    transform: [
+        Scale {
+            id:scaleTransform
+            origin.x: rootChrome.width / 2
+            origin.y: rootChrome.height / 2
+
+        }
+    ]
 }
