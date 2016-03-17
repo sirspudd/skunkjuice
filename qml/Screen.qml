@@ -48,33 +48,22 @@ WaylandOutput {
     window: Window {
         id: screen
 
-        property QtObject output
-
         width: 1024
         height: 760
         visible: true
 
-        WaylandMouseTracker {
-            id: mouseTracker
-            anchors.fill: parent
+        Item {
+          id: background
 
-            enableWSCursor: true
-            Image {
-                id: background
-                anchors.fill: parent
-                fillMode: Image.Tile
-                source: "qrc:/images/background.jpg"
-                smooth: true
-            }
-            WaylandCursorItem {
-                id: cursor
-                inputEventsEnabled: false
-                x: mouseTracker.mouseX - hotspotX
-                y: mouseTracker.mouseY - hotspotY
+          signal keyPressed(int key);
 
-                inputDevice: output.compositor.defaultInputDevice
-            }
+          focus: true
+
+          Keys.onPressed: {
+            keyPressed(event.key)
+          }
         }
+
         Shortcut {
             sequence: "Ctrl+Alt+Backspace"
             onActivated: Qt.quit()

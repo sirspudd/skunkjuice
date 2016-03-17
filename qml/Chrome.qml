@@ -44,12 +44,47 @@ import QtWayland.Compositor 1.0
 ShellSurfaceItem {
     id: rootChrome
 
+    QtObject {
+        id: d
+        property int fixedWidth: 1920
+        property int fixedHeight: 1080
+    }
+
+    onWidthChanged: {
+        // Evade 500 magic constant in underlying implementation
+        if (width != d.fixedWidth)
+        {
+            width = d.fixedWidth
+            height = d.fixedHeight
+        }
+    }
+
     shellSurface: ShellSurface {
     }
 
     onSurfaceDestroyed: {
         view.bufferLock = true;
         destroyAnimation.start();
+    }
+    /* divide by zero!
+    Behavior on x {
+        SpringAnimation { spring: 2; damping: 0.2; duration: 150 }
+    }*/
+
+    Behavior on x {
+        SmoothedAnimation { duration: 150 }
+    }
+
+    SequentialAnimation {
+        id: creationAnimation
+
+        PropertyAction { target: scaleTransform; property: "xScale"; value: 0.0 }
+        PropertyAction { target: scaleTransform; property: "yScale"; value: 2/height }
+        NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.4; duration: 150 }
+        ParallelAnimation {
+            NumberAnimation { target: scaleTransform; property: "yScale"; to: 1; duration: 150 }
+            NumberAnimation { target: scaleTransform; property: "xScale"; to: 1; duration: 150 }
+        }
     }
 
     SequentialAnimation {
@@ -67,7 +102,8 @@ ShellSurfaceItem {
             id:scaleTransform
             origin.x: rootChrome.width / 2
             origin.y: rootChrome.height / 2
-
         }
     ]
+
+    Component.onCompleted: creationAnimation.start()
 }

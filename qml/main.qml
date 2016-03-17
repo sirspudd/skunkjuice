@@ -44,10 +44,26 @@ import QtWayland.Compositor 1.0
 WaylandCompositor {
     id: comp
 
-    property var primarySurfacesArea: null
+    property var windows: []
+    property int activeWindowIndex: -1
+    property var surfaceMap
+
+    function relayoutWindows() {
+        windows.forEach(function(w,i) { w.x = (i-activeWindowIndex)*w.width; } )
+    }
 
     Screen {
         compositor: comp
+        Component.onCompleted: {
+            defaultOutput.surfaceArea.keyPressed.connect(function(key) {
+                if (key == Qt.Key_Left) {
+                    activeWindowIndex = Math.max(activeWindowIndex - 1, 0);
+                } else if (key == Qt.Key_Right) {
+                    activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
+                }
+                relayoutWindows()
+            })
+        }
     }
 
     Component {
@@ -66,10 +82,18 @@ WaylandCompositor {
         Shell {
             id: defaultShell
 
-
             onCreateShellSurface: {
                 var item = chromeComponent.createObject(defaultOutput.surfaceArea, { "surface": surface } );
                 item.shellSurface.initialize(defaultShell, surface, resource);
+                windows.push(item)
+                surface.surfaceDestroyed.connect(function() {
+                    var index = windows.indexOf(item)
+                    windows.splice(index, 1);
+                    if (activeWindowIndex == index) activeWindowIndex = 0
+                    relayoutWindows();
+                })
+                activeWindowIndex = windows.length - 1
+                relayoutWindows();
             }
 
             Component.onCompleted: {
@@ -81,6 +105,5 @@ WaylandCompositor {
     onCreateSurface: {
         var surface = surfaceComponent.createObject(comp, { } );
         surface.initialize(comp, client, id, version);
-
     }
 }
