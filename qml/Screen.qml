@@ -57,7 +57,7 @@ WaylandOutput {
 
           signal keyPressed(int key);
           focus: true
-          source: "qrc:/resources/heic0707a.png"
+          //source: "qrc:/resources/heic0707a.png"
 
           Keys.onPressed: {
             keyPressed(event.key)

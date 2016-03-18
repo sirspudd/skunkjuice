@@ -62,6 +62,7 @@ WaylandCompositor {
                     activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
                 }
                 relayoutWindows()
+                windows[activeWindowIndex].takeFocus()
             })
         }
     }
