@@ -44,6 +44,19 @@ import QtWayland.Compositor 1.0
 ShellSurfaceItem {
     id: rootChrome
 
+    visible: false
+
+    function appear() {
+        creationAnimation.start()
+    }
+
+    function vanish() {
+        view.bufferLock = true;
+        visible ? destroyAnimation.start() : 0
+    }
+
+    onVisibleChanged: visible ? appear() : vanish()
+
     QtObject {
         id: d
         property int fixedWidth: 1920
@@ -51,11 +64,12 @@ ShellSurfaceItem {
     }
 
     onWidthChanged: {
-        // Evade 500 magic constant in underlying implementation
-        if (width != d.fixedWidth)
-        {
+        if (width == -1) {
+            visible = false
+        } else {
             width = d.fixedWidth
             height = d.fixedHeight
+            visible = true
         }
     }
 
@@ -63,8 +77,7 @@ ShellSurfaceItem {
     }
 
     onSurfaceDestroyed: {
-        view.bufferLock = true;
-        destroyAnimation.start();
+        vanish();
     }
     /* divide by zero!
     Behavior on x {
@@ -104,6 +117,4 @@ ShellSurfaceItem {
             origin.y: rootChrome.height / 2
         }
     ]
-
-    Component.onCompleted: creationAnimation.start()
 }

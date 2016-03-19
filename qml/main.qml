@@ -52,6 +52,22 @@ WaylandCompositor {
         windows.forEach(function(w,i) { w.x = (i-activeWindowIndex)*w.width; } )
     }
 
+    function addWindow(item) {
+        windows.push(item)
+        activeWindowIndex = windows.length - 1
+        relayoutWindows();
+    }
+
+    function removeWindow(item) {
+        var index = windows.indexOf(item)
+        if (index != -1)
+        {
+            windows.splice(index, 1);
+            if (activeWindowIndex == index) activeWindowIndex = 0
+            relayoutWindows();
+        }
+    }
+
     Screen {
         compositor: comp
         Component.onCompleted: {
@@ -62,7 +78,7 @@ WaylandCompositor {
                     activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
                 }
                 relayoutWindows()
-                windows[activeWindowIndex].takeFocus()
+                //windows[activeWindowIndex].takeFocus()
             })
         }
     }
@@ -86,15 +102,8 @@ WaylandCompositor {
             onCreateShellSurface: {
                 var item = chromeComponent.createObject(defaultOutput.surfaceArea, { "surface": surface } );
                 item.shellSurface.initialize(defaultShell, surface, resource);
-                windows.push(item)
-                surface.surfaceDestroyed.connect(function() {
-                    var index = windows.indexOf(item)
-                    windows.splice(index, 1);
-                    if (activeWindowIndex == index) activeWindowIndex = 0
-                    relayoutWindows();
-                })
-                activeWindowIndex = windows.length - 1
-                relayoutWindows();
+                item.visibleChanged.connect(function() { item.visible ? addWindow(item) : removeWindow(item) } )
+                item.surfaceDestroyed.connect(function() { removeWindow(item) })
             }
 
             Component.onCompleted: {

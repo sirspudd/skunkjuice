@@ -48,9 +48,7 @@ WaylandOutput {
     window: Window {
         id: screen
 
-        width: 1024
-        height: 760
-        visible: true
+        visible:true
 
         Image {
           id: background
