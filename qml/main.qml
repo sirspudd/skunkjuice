@@ -44,67 +44,8 @@ import QtWayland.Compositor 1.0
 WaylandCompositor {
     id: comp
 
-    property var windows: []
-    property int activeWindowIndex: -1
-    property var surfaceMap
-
     property var waylandScreen
     property var uberItem
-
-    function repositionUberItem() {
-        uberItem.updatePosition()
-    }
-
-    function relayoutWindows() {
-        windows.forEach(function(w,i) { w.x = i*waylandScreen.width; } )
-        repositionUberItem();
-        windows[activeWindowIndex].takeFocus()
-    }
-
-    function addWindow(item) {
-        windows.push(item)
-        activeWindowIndex = windows.length - 1
-        relayoutWindows();
-    }
-
-    function removeWindow(item) {
-        var index = windows.indexOf(item)
-        if (index != -1)
-        {
-            windows.splice(index, 1);
-            if (activeWindowIndex == index) activeWindowIndex = 0
-            relayoutWindows();
-        }
-    }
-
-    function moveLeft() {
-        activeWindowIndex = Math.max(activeWindowIndex - 1, 0);
-        repositionUberItem();
-    }
-
-    function moveRight() {
-        activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
-        repositionUberItem();
-    }
-
-    Item {
-        id: keyhandler
-        Keys.onPressed: {
-            if (event.key == Qt.Key_Left) {
-                moveLeft()
-                event.accepted = true;
-            } else if (event.key == Qt.Key_Right) {
-                moveRight()
-                event.accepted = true;
-            } else if (event.key == Qt.Key_Escape) {
-                uberItem.zoomOut()
-                event.accepted = true;
-            } else if (event.key == Qt.Key_Return) {
-                uberItem.zoomIn()
-                event.accepted = true;
-            }
-        }
-    }
 
     Screen {
         compositor: comp
@@ -129,8 +70,8 @@ WaylandCompositor {
             onCreateShellSurface: {
                 var item = chromeComponent.createObject(uberItem, { "surface": surface } );
                 item.shellSurface.initialize(defaultShell, surface, resource);
-                item.visibleChanged.connect(function() { item.visible ? addWindow(item) : removeWindow(item) } )
-                item.surfaceDestroyed.connect(function() { removeWindow(item) })
+                item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
+                item.surfaceDestroyed.connect(function() { uberItem.removeWindow(item) })
             }
 
             Component.onCompleted: {

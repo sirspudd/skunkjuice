@@ -112,5 +112,5 @@ ShellSurfaceItem {
         }
     ]
 
-    Keys.forwardTo: keyhandler
+    Keys.forwardTo: uberItem
 }

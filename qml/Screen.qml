@@ -49,68 +49,111 @@ WaylandOutput {
         visible:true
 
         Image {
-          id: background
-          //source: "qrc:/resources/heic0707a.png"
-          Item {
-              id: topItem
+            id: background
+            //source: "qrc:/resources/heic0707a.png"
+            Item {
+                id: topItem
 
-              property var zoomScale: 1
+                QtObject {
+                    id: d
+                    property var windows: []
+                    property int activeWindowIndex: -1
 
-              function updatePosition() {
-                  indexChangedAnimation.start()
-              }
+                    property bool zoomed: false
+                }
 
-              function zoomOut() {
-                  zoomScale = 0.75
-                  zoomOutAnimation.start()
-              }
+                function updatePosition() {
+                    indexChangedAnimation.start()
+                }
 
-              function zoomIn() {
-                  zoomScale =  1.00
-                  zoomInAnimation.start()
-              }
+                function toggleZoom() {
+                    d.zoomed = !d.zoomed
+                    zoomAnimation.start()
+                }
 
-              width: childrenRect.width
-              height: childrenRect.height
-              Component.onCompleted: uberItem = this
+                function relayoutWindows() {
+                    d.windows.forEach(function(w,i) { w.x = i*waylandScreen.width; } )
+                    updatePosition();
+                    d.windows[d.activeWindowIndex].takeFocus()
+                }
 
-              ParallelAnimation {
-                  id: indexChangedAnimation
-                  SmoothedAnimation {
-                      target: scaleTransform;
-                      property: "origin.x";
-                      to: activeWindowIndex*waylandScreen.width + waylandScreen.width/2;
-                      duration: 150 }
-                  SmoothedAnimation {
-                      target: topItem;
-                      property: "x";
-                      to: -activeWindowIndex*waylandScreen.width;
-                      duration: 150 }
-              }
+                function addWindow(item) {
+                    d.windows.push(item)
+                    d.activeWindowIndex = d.windows.length - 1
+                    relayoutWindows();
+                }
 
-              SequentialAnimation {
-                  id: zoomOutAnimation
-                  ParallelAnimation {
-                      NumberAnimation { target: scaleTransform; property: "yScale"; to: topItem.zoomScale; duration: 150 }
-                      NumberAnimation { target: scaleTransform; property: "xScale"; to: topItem.zoomScale; duration: 150 }
-                  }
-              }
+                function removeWindow(item) {
+                    var index = windows.indexOf(item)
+                    if (index != -1) {
+                        windows.splice(index, 1);
+                        if (d.activeWindowIndex == index) d.activeWindowIndex = 0
+                        relayoutWindows();
+                    }
+                }
 
-              SequentialAnimation {
-                  id: zoomInAnimation
-                  ParallelAnimation {
-                      NumberAnimation { target: scaleTransform; property: "yScale"; to: topItem.zoomScale; duration: 150 }
-                      NumberAnimation { target: scaleTransform; property: "xScale"; to: topItem.zoomScale; duration: 150 }
-                  }
-              }
+                function moveLeft() {
+                    d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
+                    updatePosition()
+                }
 
-              transform: [
-                  Scale {
-                      id:scaleTransform
-                      origin.y: waylandScreen.height/2
-                  }
-              ]
-          }
+                function moveRight() {
+                    d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);
+                    updatePosition()
+                }
+
+                width: childrenRect.width
+                height: childrenRect.height
+                Component.onCompleted: uberItem = this
+
+                ParallelAnimation {
+                    id: indexChangedAnimation
+                    SmoothedAnimation {
+                        target: scaleTransform;
+                        property: "origin.x";
+                        to: d.activeWindowIndex*waylandScreen.width + waylandScreen.width/2;
+                        duration: 150 }
+                    SmoothedAnimation {
+                        target: topItem;
+                        property: "x";
+                        to: -d.activeWindowIndex*waylandScreen.width;
+                        duration: 150 }
+                }
+
+                SequentialAnimation {
+                    id: zoomAnimation
+                    ParallelAnimation {
+                        NumberAnimation { target: scaleTransform; property: "yScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
+                        NumberAnimation { target: scaleTransform; property: "xScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
+                    }
+                }
+
+                transform: [
+                    Scale {
+                        id:scaleTransform
+                        origin.y: waylandScreen.height/2
+                    }
+                ]
+
+                Keys.onPressed: {
+                    if(d.zoomed) {
+                        if (event.key == Qt.Key_Left) {
+                            moveLeft()
+                            event.accepted = true;
+                        } else if (event.key == Qt.Key_Right) {
+                            moveRight()
+                            event.accepted = true;
+                        } else if (event.key == Qt.Key_Return) {
+                            toggleZoom()
+                            event.accepted = true;
+                        }
+                    }
+                    if (event.key == Qt.Key_CapsLock) {
+                        uberItem.toggleZoom()
+                        event.accepted = true
+                    }
+                }
+            }
         }
 
         Shortcut {
