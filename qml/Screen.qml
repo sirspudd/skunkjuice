@@ -93,7 +93,7 @@ WaylandOutput {
               transform: [
                   Scale {
                       id:scaleTransform
-                      origin.x: waylandScreen.width/2
+                      origin.x: activeWindowIndex*waylandScreen.width + waylandScreen.width/2
                       origin.y: waylandScreen.height/2
                   }
               ]

@@ -52,7 +52,7 @@ WaylandCompositor {
     property var uberItem
 
     function repositionUberItem() {
-        uberItem.x = uberItem.zoomScale*-activeWindowIndex*waylandScreen.width
+        uberItem.x = -activeWindowIndex*waylandScreen.width
     }
 
     function relayoutWindows() {
@@ -99,11 +99,9 @@ WaylandCompositor {
                 event.accepted = true;
             } else if (event.key == Qt.Key_Escape) {
                 uberItem.zoomOut()
-                repositionUberItem();
                 event.accepted = true;
             } else if (event.key == Qt.Key_Return) {
                 uberItem.zoomIn()
-                repositionUberItem();
                 event.accepted = true;
             }
         }
