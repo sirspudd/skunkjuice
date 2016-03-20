@@ -48,6 +48,9 @@ WaylandCompositor {
     property int activeWindowIndex: -1
     property var surfaceMap
 
+    property var waylandScreen
+    property var uberItem
+
     function relayoutWindows() {
         windows.forEach(function(w,i) { w.x = (i-activeWindowIndex)*w.width; } )
         windows[activeWindowIndex].takeFocus()
@@ -88,6 +91,12 @@ WaylandCompositor {
             } else if (event.key == Qt.Key_Right) {
                 moveRight()
                 event.accepted = true;
+            } else if (event.key == Qt.Key_Escape) {
+                uberItem.zoomOut()
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Return) {
+                uberItem.zoomIn()
+                event.accepted = true;
             }
         }
     }
@@ -113,7 +122,7 @@ WaylandCompositor {
             id: defaultShell
 
             onCreateShellSurface: {
-                var item = chromeComponent.createObject(defaultOutput.surfaceArea, { "surface": surface } );
+                var item = chromeComponent.createObject(uberItem, { "surface": surface } );
                 item.shellSurface.initialize(defaultShell, surface, resource);
                 item.visibleChanged.connect(function() { item.visible ? addWindow(item) : removeWindow(item) } )
                 item.surfaceDestroyed.connect(function() { removeWindow(item) })

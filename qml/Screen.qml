@@ -44,20 +44,57 @@ import QtWayland.Compositor 1.0
 
 WaylandOutput {
     id: output
-    property alias surfaceArea: background
-    window: Window {
-        id: screen
 
+    window: Window {
         visible:true
 
         Image {
           id: background
           //source: "qrc:/resources/heic0707a.png"
+          Item {
+              id: topItem
+              function zoomOut() {
+                  zoomOutAnimation.start()
+              }
+
+              function zoomIn() {
+                  zoomInAnimation.start()
+              }
+
+              width: childrenRect.width
+              height: childrenRect.height
+              Component.onCompleted: uberItem = this
+              SequentialAnimation {
+                  id: zoomOutAnimation
+                  ParallelAnimation {
+                      NumberAnimation { target: scaleTransform; property: "yScale"; to: 0.75; duration: 150 }
+                      NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.75; duration: 150 }
+                  }
+              }
+
+              SequentialAnimation {
+                  id: zoomInAnimation
+                  ParallelAnimation {
+                      NumberAnimation { target: scaleTransform; property: "yScale"; to: 1.00; duration: 150 }
+                      NumberAnimation { target: scaleTransform; property: "xScale"; to: 1.00; duration: 150 }
+                  }
+              }
+
+              transform: [
+                  Scale {
+                      id:scaleTransform
+                      origin.x: waylandScreen.width/2
+                      origin.y: waylandScreen.height/2
+                  }
+              ]
+          }
         }
 
         Shortcut {
             sequence: "Ctrl+Alt+Backspace"
             onActivated: Qt.quit()
         }
+
+        Component.onCompleted: waylandScreen = this
     }
 }

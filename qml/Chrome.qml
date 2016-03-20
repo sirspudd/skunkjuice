@@ -57,18 +57,12 @@ ShellSurfaceItem {
 
     onVisibleChanged: visible ? appear() : vanish()
 
-    QtObject {
-        id: d
-        property int fixedWidth: 1920
-        property int fixedHeight: 1080
-    }
-
     onWidthChanged: {
         if (width == -1) {
             visible = false
         } else {
-            width = d.fixedWidth
-            height = d.fixedHeight
+            width = waylandScreen.width
+            height = waylandScreen.height
             visible = true
         }
     }
