@@ -56,6 +56,10 @@ WaylandOutput {
 
               property var zoomScale: 1
 
+              function updatePosition() {
+                  indexChangedAnimation.start()
+              }
+
               function zoomOut() {
                   zoomScale = 0.75
                   zoomOutAnimation.start()
@@ -70,8 +74,18 @@ WaylandOutput {
               height: childrenRect.height
               Component.onCompleted: uberItem = this
 
-              Behavior on x {
-                  SmoothedAnimation { duration: 150 }
+              ParallelAnimation {
+                  id: indexChangedAnimation
+                  SmoothedAnimation {
+                      target: scaleTransform;
+                      property: "origin.x";
+                      to: activeWindowIndex*waylandScreen.width + waylandScreen.width/2;
+                      duration: 150 }
+                  SmoothedAnimation {
+                      target: topItem;
+                      property: "x";
+                      to: -activeWindowIndex*waylandScreen.width;
+                      duration: 150 }
               }
 
               SequentialAnimation {
@@ -93,7 +107,6 @@ WaylandOutput {
               transform: [
                   Scale {
                       id:scaleTransform
-                      origin.x: activeWindowIndex*waylandScreen.width + waylandScreen.width/2
                       origin.y: waylandScreen.height/2
                   }
               ]

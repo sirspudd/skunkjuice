@@ -52,11 +52,12 @@ WaylandCompositor {
     property var uberItem
 
     function repositionUberItem() {
-        uberItem.x = -activeWindowIndex*waylandScreen.width
+        uberItem.updatePosition()
     }
 
     function relayoutWindows() {
         windows.forEach(function(w,i) { w.x = i*waylandScreen.width; } )
+        repositionUberItem();
         windows[activeWindowIndex].takeFocus()
     }
 
@@ -64,7 +65,6 @@ WaylandCompositor {
         windows.push(item)
         activeWindowIndex = windows.length - 1
         relayoutWindows();
-        repositionUberItem();
     }
 
     function removeWindow(item) {
@@ -75,7 +75,6 @@ WaylandCompositor {
             if (activeWindowIndex == index) activeWindowIndex = 0
             relayoutWindows();
         }
-        repositionUberItem();
     }
 
     function moveLeft() {
