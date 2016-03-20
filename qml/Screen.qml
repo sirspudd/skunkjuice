@@ -53,30 +53,40 @@ WaylandOutput {
           //source: "qrc:/resources/heic0707a.png"
           Item {
               id: topItem
+
+              property var zoomScale: 1
+
               function zoomOut() {
+                  zoomScale = 0.75
                   zoomOutAnimation.start()
               }
 
               function zoomIn() {
+                  zoomScale =  1.00
                   zoomInAnimation.start()
               }
 
               width: childrenRect.width
               height: childrenRect.height
               Component.onCompleted: uberItem = this
+
+              Behavior on x {
+                  SmoothedAnimation { duration: 150 }
+              }
+
               SequentialAnimation {
                   id: zoomOutAnimation
                   ParallelAnimation {
-                      NumberAnimation { target: scaleTransform; property: "yScale"; to: 0.75; duration: 150 }
-                      NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.75; duration: 150 }
+                      NumberAnimation { target: scaleTransform; property: "yScale"; to: topItem.zoomScale; duration: 150 }
+                      NumberAnimation { target: scaleTransform; property: "xScale"; to: topItem.zoomScale; duration: 150 }
                   }
               }
 
               SequentialAnimation {
                   id: zoomInAnimation
                   ParallelAnimation {
-                      NumberAnimation { target: scaleTransform; property: "yScale"; to: 1.00; duration: 150 }
-                      NumberAnimation { target: scaleTransform; property: "xScale"; to: 1.00; duration: 150 }
+                      NumberAnimation { target: scaleTransform; property: "yScale"; to: topItem.zoomScale; duration: 150 }
+                      NumberAnimation { target: scaleTransform; property: "xScale"; to: topItem.zoomScale; duration: 150 }
                   }
               }
 

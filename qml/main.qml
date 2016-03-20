@@ -51,8 +51,12 @@ WaylandCompositor {
     property var waylandScreen
     property var uberItem
 
+    function repositionUberItem() {
+        uberItem.x = uberItem.zoomScale*-activeWindowIndex*waylandScreen.width
+    }
+
     function relayoutWindows() {
-        windows.forEach(function(w,i) { w.x = (i-activeWindowIndex)*w.width; } )
+        windows.forEach(function(w,i) { w.x = i*waylandScreen.width; } )
         windows[activeWindowIndex].takeFocus()
     }
 
@@ -60,6 +64,7 @@ WaylandCompositor {
         windows.push(item)
         activeWindowIndex = windows.length - 1
         relayoutWindows();
+        repositionUberItem();
     }
 
     function removeWindow(item) {
@@ -70,16 +75,17 @@ WaylandCompositor {
             if (activeWindowIndex == index) activeWindowIndex = 0
             relayoutWindows();
         }
+        repositionUberItem();
     }
 
     function moveLeft() {
         activeWindowIndex = Math.max(activeWindowIndex - 1, 0);
-        relayoutWindows()
+        repositionUberItem();
     }
 
     function moveRight() {
         activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
-        relayoutWindows()
+        repositionUberItem();
     }
 
     Item {
@@ -93,9 +99,11 @@ WaylandCompositor {
                 event.accepted = true;
             } else if (event.key == Qt.Key_Escape) {
                 uberItem.zoomOut()
+                repositionUberItem();
                 event.accepted = true;
             } else if (event.key == Qt.Key_Return) {
                 uberItem.zoomIn()
+                repositionUberItem();
                 event.accepted = true;
             }
         }
