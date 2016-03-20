@@ -117,4 +117,6 @@ ShellSurfaceItem {
             origin.y: rootChrome.height / 2
         }
     ]
+
+    Keys.forwardTo: keyhandler
 }

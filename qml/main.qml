@@ -50,6 +50,7 @@ WaylandCompositor {
 
     function relayoutWindows() {
         windows.forEach(function(w,i) { w.x = (i-activeWindowIndex)*w.width; } )
+        windows[activeWindowIndex].takeFocus()
     }
 
     function addWindow(item) {
@@ -68,19 +69,31 @@ WaylandCompositor {
         }
     }
 
+    function moveLeft() {
+        activeWindowIndex = Math.max(activeWindowIndex - 1, 0);
+        relayoutWindows()
+    }
+
+    function moveRight() {
+        activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
+        relayoutWindows()
+    }
+
+    Item {
+        id: keyhandler
+        Keys.onPressed: {
+            if (event.key == Qt.Key_Left) {
+                moveLeft()
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Right) {
+                moveRight()
+                event.accepted = true;
+            }
+        }
+    }
+
     Screen {
         compositor: comp
-        Component.onCompleted: {
-            defaultOutput.surfaceArea.keyPressed.connect(function(key) {
-                if (key == Qt.Key_Left) {
-                    activeWindowIndex = Math.max(activeWindowIndex - 1, 0);
-                } else if (key == Qt.Key_Right) {
-                    activeWindowIndex = Math.min(activeWindowIndex + 1, windows.length - 1);
-                }
-                relayoutWindows()
-                //windows[activeWindowIndex].takeFocus()
-            })
-        }
     }
 
     Component {
