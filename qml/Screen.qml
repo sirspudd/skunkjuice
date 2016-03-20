@@ -74,7 +74,7 @@ WaylandOutput {
                 function relayoutWindows() {
                     d.windows.forEach(function(w,i) { w.x = i*waylandScreen.width; } )
                     updatePosition();
-                    d.windows[d.activeWindowIndex].takeFocus()
+                    d.windows.length ? d.windows[d.activeWindowIndex].takeFocus() : 0;
                 }
 
                 function addWindow(item) {
@@ -84,9 +84,9 @@ WaylandOutput {
                 }
 
                 function removeWindow(item) {
-                    var index = windows.indexOf(item)
+                    var index = d.windows.indexOf(item)
                     if (index != -1) {
-                        windows.splice(index, 1);
+                        d.windows.splice(index, 1);
                         if (d.activeWindowIndex == index) d.activeWindowIndex = 0
                         relayoutWindows();
                     }
@@ -146,14 +146,18 @@ WaylandOutput {
                         } else if (event.key == Qt.Key_Return) {
                             toggleZoom()
                             event.accepted = true;
+                        } else if (event.key == Qt.Key_Up) {
+                            comp.destroyClientForSurface(d.windows[d.activeWindowIndex].surface)
+                            event.accepted = true;
                         }
-                    }
-                    if (event.key == Qt.Key_CapsLock) {
-                        uberItem.toggleZoom()
-                        event.accepted = true
                     }
                 }
             }
+        }
+
+        Shortcut {
+            sequence: "Ctrl+Alt+Up"
+            onActivated: uberItem.toggleZoom()
         }
 
         Shortcut {

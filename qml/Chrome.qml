@@ -44,6 +44,8 @@ import QtWayland.Compositor 1.0
 ShellSurfaceItem {
     id: rootChrome
 
+    signal destructionComplete;
+
     visible: false
 
     function appear() {
@@ -101,7 +103,7 @@ ShellSurfaceItem {
             NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.4; duration: 150 }
         }
         NumberAnimation { target: scaleTransform; property: "xScale"; to: 0; duration: 150 }
-        ScriptAction { script: { rootChrome.destroy(); } }
+        ScriptAction { script: { destructionComplete(); rootChrome.destroy(); } }
     }
 
     transform: [

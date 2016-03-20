@@ -71,7 +71,7 @@ WaylandCompositor {
                 var item = chromeComponent.createObject(uberItem, { "surface": surface } );
                 item.shellSurface.initialize(defaultShell, surface, resource);
                 item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
-                item.surfaceDestroyed.connect(function() { uberItem.removeWindow(item) })
+                item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
             }
 
             Component.onCompleted: {
