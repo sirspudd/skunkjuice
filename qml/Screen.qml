@@ -151,7 +151,7 @@ WaylandOutput {
                                    || event.key == Qt.Key_Down) {
                             toggleZoom()
                         } else if (event.key == Qt.Key_Up) {
-                            comp.destroyClientForSurface(d.windows[d.activeWindowIndex].surface)
+                            d.windows[d.activeWindowIndex].surface.client.kill()
                         }
                         event.accepted = true;
                     }
