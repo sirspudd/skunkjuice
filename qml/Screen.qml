@@ -152,6 +152,10 @@ WaylandOutput {
                             toggleZoom()
                         } else if (event.key == Qt.Key_Up) {
                             d.windows[d.activeWindowIndex].surface.client.kill()
+                        } else if (event.key == Qt.Key_PageUp) {
+                            d.windows[d.activeWindowIndex].opacity *= 1.10
+                        } else if (event.key == Qt.Key_PageDown) {
+                            d.windows[d.activeWindowIndex].opacity *= 0.90
                         }
                         event.accepted = true;
                     }
