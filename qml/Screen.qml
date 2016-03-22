@@ -62,8 +62,9 @@ WaylandOutput {
                     property bool zoomed: false
                 }
 
-                function updatePosition() {
+                function updateIndex() {
                     indexChangedAnimation.start()
+                    d.windows.length ? d.windows[d.activeWindowIndex].takeFocus() : 0;
                 }
 
                 function toggleZoom() {
@@ -73,8 +74,7 @@ WaylandOutput {
 
                 function relayoutWindows() {
                     d.windows.forEach(function(w,i) { w.x = i*waylandScreen.width; } )
-                    updatePosition();
-                    d.windows.length ? d.windows[d.activeWindowIndex].takeFocus() : 0;
+                    updateIndex();
                 }
 
                 function addWindow(item) {
@@ -94,12 +94,12 @@ WaylandOutput {
 
                 function moveLeft() {
                     d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
-                    updatePosition()
+                    updateIndex()
                 }
 
                 function moveRight() {
                     d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);
-                    updatePosition()
+                    updateIndex()
                 }
 
                 width: childrenRect.width
