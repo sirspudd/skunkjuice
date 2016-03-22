@@ -40,11 +40,31 @@
 
 import QtQuick 2.0
 import QtWayland.Compositor 1.0
+import Qt.labs.settings 1.0
 
 ShellSurfaceItem {
     id: rootChrome
 
     signal destructionComplete;
+
+    Settings {
+        id: settings
+        property bool dynamicSizing: false
+
+        // Solely introducing this because of the cool-retro-term
+        // QOpenGLFramebufferObject: Framebuffer incomplete attachment
+        property real clientResizingFactor: 0.9
+
+        property int defaultClientSurfaceWidth: 1280
+        property int defaultClientSurfaceHeight: 720
+    }
+
+    QtObject {
+        id: d
+        property size clientSize: settings.dynamicSizing ?
+                                      Qt.size(waylandScreen.width*settings.clientResizingFactor, waylandScreen.height*settings.clientResizingFactor)
+                                    : Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight)
+    }
 
     visible: false
 
@@ -63,6 +83,7 @@ ShellSurfaceItem {
         if (width == -1) {
             visible = false
         } else {
+            rootChrome.shellSurface.sendConfigure(d.clientSize, 0)
             width = waylandScreen.width
             height = waylandScreen.height
             visible = true
