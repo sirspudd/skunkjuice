@@ -50,7 +50,7 @@ WaylandOutput {
 
         Image {
             id: background
-            //source: "qrc:/resources/heic0707a.png"
+            source: "qrc:/resources/heic0707a.png"
             Item {
                 id: topItem
 
