@@ -136,23 +136,37 @@ WaylandOutput {
                 ]
 
                 Keys.onPressed: {
+                    if (event.key == Qt.Key_F1) {
+                        toggleZoom()
+                        event.accepted = true;
+                    }
+
                     if(d.zoomed) {
                         if (event.key == Qt.Key_Left) {
                             moveLeft()
-                            event.accepted = true;
                         } else if (event.key == Qt.Key_Right) {
                             moveRight()
-                            event.accepted = true;
-                        } else if (event.key == Qt.Key_Return) {
+                        } else if (event.key == Qt.Key_Return
+                                   || event.key == Qt.Key_Escape
+                                   || event.key == Qt.Key_Down) {
                             toggleZoom()
-                            event.accepted = true;
                         } else if (event.key == Qt.Key_Up) {
                             comp.destroyClientForSurface(d.windows[d.activeWindowIndex].surface)
-                            event.accepted = true;
                         }
+                        event.accepted = true;
                     }
                 }
             }
+        }
+
+        Shortcut {
+            sequence: "Ctrl+Alt+Right"
+            onActivated: uberItem.moveRight()
+        }
+
+        Shortcut {
+            sequence: "Ctrl+Alt+Left"
+            onActivated: uberItem.moveLeft()
         }
 
         Shortcut {
