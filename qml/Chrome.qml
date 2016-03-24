@@ -49,7 +49,8 @@ ShellSurfaceItem {
 
     Settings {
         id: settings
-        property bool dynamicSizing: false
+        property bool resizeClients: true
+        property bool resizeByRatio: false
 
         // Solely introducing this because of the cool-retro-term
         // QOpenGLFramebufferObject: Framebuffer incomplete attachment
@@ -61,9 +62,17 @@ ShellSurfaceItem {
 
     QtObject {
         id: d
-        property size clientSize: settings.dynamicSizing ?
-                                      Qt.size(waylandScreen.width*settings.clientResizingFactor, waylandScreen.height*settings.clientResizingFactor)
-                                    : Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight)
+        property size clientSize: {
+            if (!settings.resizeClients) {
+                return Qt.size(waylandScreen.width,waylandScreen.height)
+            } else {
+                if (settings.resizeByRatio) {
+                    return Qt.size(waylandScreen.width*settings.clientResizingFactor, waylandScreen.height*settings.clientResizingFactor)
+                } else {
+                    return Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight)
+                }
+            }
+        }
     }
 
     visible: false

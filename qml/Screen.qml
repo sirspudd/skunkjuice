@@ -41,6 +41,7 @@
 import QtQuick 2.5
 import QtQuick.Window 2.2
 import QtWayland.Compositor 1.0
+import Qt.labs.settings 1.0
 
 WaylandOutput {
     id: output
@@ -53,6 +54,11 @@ WaylandOutput {
             source: "qrc:/resources/heic0707a.png"
             Item {
                 id: topItem
+
+                Settings {
+                    id: settings
+                    property bool wrapAroundNavigation: false
+                }
 
                 QtObject {
                     id: d
@@ -93,12 +99,20 @@ WaylandOutput {
                 }
 
                 function moveLeft() {
-                    d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
+                    if (settings.wrapAroundNavigation) {
+                        d.activeWindowIndex = d.activeWindowIndex == 0 ? d.windows.length - 1 : d.activeWindowIndex - 1
+                    } else {
+                        d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
+                    }
                     updateIndex()
                 }
 
                 function moveRight() {
-                    d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);
+                    if (settings.wrapAroundNavigation) {
+                        d.activeWindowIndex = (d.activeWindowIndex + 1)%d.windows.length
+                    } else {
+                        d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);
+                    }
                     updateIndex()
                 }
 
