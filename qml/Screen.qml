@@ -49,9 +49,8 @@ WaylandOutput {
     window: Window {
         visible:true
 
-        Image {
+        BackgroundSwirls {
             id: background
-            source: "qrc:/resources/heic0707a.png"
             Item {
                 id: topItem
 
