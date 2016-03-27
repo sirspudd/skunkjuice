@@ -49,8 +49,28 @@ WaylandOutput {
     window: Window {
         visible:true
 
-        BackgroundSwirls {
-            id: background
+        Item {
+            anchors.fill: parent
+
+            Item {
+                anchors.fill: parent
+
+                BackgroundSwirls {
+                    opacity: 1.0 - parlourTrickCurtain.opacity
+                    visible: opacity > 0.2
+                }
+
+                Rectangle {
+                    id: parlourTrickCurtain
+                    anchors.fill: parent
+                    color: "black"
+                    opacity: topItem.width < waylandScreen.width ? 0.0 : 1.0
+                    Behavior on opacity {
+                        NumberAnimation { duration: 150 }
+                    }
+                }
+            }
+
             Item {
                 id: topItem
 
