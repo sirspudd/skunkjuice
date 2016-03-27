@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     QGuiApplication app(argc, argv);
+    app.setOrganizationName("QPi");
     QQmlApplicationEngine appEngine(QUrl("qrc:///qml/main.qml"));
 
     return app.exec();
