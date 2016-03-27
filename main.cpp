@@ -39,16 +39,21 @@
 ****************************************************************************/
 
 #include <QtCore/QUrl>
-#include <QtCore/QDebug>
-
 #include <QtGui/QGuiApplication>
-
 #include <QtQml/QQmlApplicationEngine>
+#include <QSurfaceFormat>
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    // Work around us defaulting to 16 bit colour depth on the pi
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setAlphaBufferSize(8);
+    format.setRedBufferSize(8);
+    format.setGreenBufferSize(8);
+    format.setBlueBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(format);
 
+    QGuiApplication app(argc, argv);
     QQmlApplicationEngine appEngine(QUrl("qrc:///qml/main.qml"));
 
     return app.exec();
