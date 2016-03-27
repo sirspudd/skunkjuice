@@ -12,6 +12,7 @@ WorkingDirectory=~
 TTYPath=/dev/tty7
 PAMName=login
 ExecStart=-/opt/pi-compositor/pi-compositor -platform eglfs -plugin CECKeyboard
+Restart=always
 
 [Install]
 WantedBy=graphical.target
