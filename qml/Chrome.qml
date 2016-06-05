@@ -99,12 +99,10 @@ ShellSurfaceItem {
         }
     }
 
-    shellSurface: ShellSurface {
-    }
-
     onSurfaceDestroyed: {
         vanish();
     }
+
     /* divide by zero!
     Behavior on x {
         SpringAnimation { spring: 2; damping: 0.2; duration: 150 }

@@ -64,18 +64,18 @@ WaylandCompositor {
     }
 
     extensions: [
-        Shell {
-            id: defaultShell
-
-            onCreateShellSurface: {
-                var item = chromeComponent.createObject(uberItem, { "surface": surface } );
-                item.shellSurface.initialize(defaultShell, surface, resource);
+        WlShell {
+            onShellSurfaceCreated: {
+                var item = chromeComponent.createObject(uberItem, { "shellSurface": shellSurface } );
                 item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
                 item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
             }
-
-            Component.onCompleted: {
-                initialize();
+        },
+        XdgShell {
+            onXdgSurfaceCreated: {
+                var item = chromeComponent.createObject(uberItem, { "shellSurface": xdgSurface } );
+                item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
+                item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
             }
         }
     ]
