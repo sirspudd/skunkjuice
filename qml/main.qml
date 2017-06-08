@@ -60,6 +60,9 @@ WaylandCompositor {
 
     Settings {
         id: settings
+
+        property bool animatedBackground: true
+
         property bool resizeClients: false
         property bool resizeByRatio: false
 

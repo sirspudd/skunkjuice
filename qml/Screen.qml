@@ -59,161 +59,161 @@ WaylandOutput {
     window: Window {
         id: screen
 
+        color: "black"
         visibility: Window.FullScreen
+
+        Item {
+            anchors.fill: parent
+
+            visible: settings.animatedBackground
+            enabled: settings.animatedBackground
+            BackgroundSwirls {
+                anchors.fill: parent
+                opacity: 1.0 - parlourTrickCurtain.opacity
+                visible: opacity > 0.2
+            }
+
+            Rectangle {
+                id: parlourTrickCurtain
+                anchors.fill: parent
+                color: "black"
+                opacity: topItem.width < compositorWindow.width ? 0.0 : 1.0
+                Behavior on opacity {
+                    NumberAnimation { duration: 150 }
+                }
+            }
+        }
 
         WaylandMouseTracker {
             id: mouseTracker
             anchors.fill: parent
-
             windowSystemCursorEnabled: true
+
             Item {
-                anchors.fill: parent
+                id: topItem
 
-                Item {
-                    anchors.fill: parent
+                QtObject {
+                    id: d
+                    property var windows: []
+                    property int activeWindowIndex: -1
 
-                    BackgroundSwirls {
-                        opacity: 1.0 - parlourTrickCurtain.opacity
-                        visible: opacity > 0.2
-                    }
+                    property bool zoomed: false
+                }
 
-                    Rectangle {
-                        id: parlourTrickCurtain
-                        anchors.fill: parent
-                        color: "black"
-                        opacity: topItem.width < compositorWindow.width ? 0.0 : 1.0
-                        Behavior on opacity {
-                            NumberAnimation { duration: 150 }
-                        }
+                function updateIndex() {
+                    indexChangedAnimation.start()
+                    d.windows.length ? d.windows[d.activeWindowIndex].takeFocus() : 0;
+                }
+
+                function toggleZoom() {
+                    d.zoomed = !d.zoomed
+                    zoomAnimation.start()
+                }
+
+                function relayoutWindows() {
+                    d.windows.forEach(function(w,i) { w.x = i*compositorWindow.width; } )
+                    updateIndex();
+                }
+
+                function addWindow(item) {
+                    d.windows.push(item)
+                    d.activeWindowIndex = d.windows.length - 1
+                    relayoutWindows();
+                }
+
+                function removeWindow(item) {
+                    var index = d.windows.indexOf(item)
+                    if (index != -1) {
+                        d.windows.splice(index, 1);
+                        if (d.activeWindowIndex == index) d.activeWindowIndex = 0
+                        relayoutWindows();
                     }
                 }
 
-                Item {
-                    id: topItem
-
-                    QtObject {
-                        id: d
-                        property var windows: []
-                        property int activeWindowIndex: -1
-
-                        property bool zoomed: false
+                function moveLeft() {
+                    if (settings.wrapAroundNavigation) {
+                        d.activeWindowIndex = d.activeWindowIndex == 0 ? d.windows.length - 1 : d.activeWindowIndex - 1
+                    } else {
+                        d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
                     }
+                    updateIndex()
+                }
 
-                    function updateIndex() {
-                        indexChangedAnimation.start()
-                        d.windows.length ? d.windows[d.activeWindowIndex].takeFocus() : 0;
+                function moveRight() {
+                    if (settings.wrapAroundNavigation) {
+                        d.activeWindowIndex = (d.activeWindowIndex + 1)%d.windows.length
+                    } else {
+                        d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);
                     }
+                    updateIndex()
+                }
 
-                    function toggleZoom() {
-                        d.zoomed = !d.zoomed
-                        zoomAnimation.start()
-                    }
+                width: childrenRect.width
+                height: childrenRect.height
+                Component.onCompleted: uberItem = this
 
-                    function relayoutWindows() {
-                        d.windows.forEach(function(w,i) { w.x = i*compositorWindow.width; } )
-                        updateIndex();
-                    }
+                ParallelAnimation {
+                    id: indexChangedAnimation
+                    SmoothedAnimation {
+                        target: scaleTransform;
+                        property: "origin.x";
+                        to: d.activeWindowIndex*compositorWindow.width + compositorWindow.width/2;
+                        duration: 150 }
+                    SmoothedAnimation {
+                        target: topItem;
+                        property: "x";
+                        to: -d.activeWindowIndex*compositorWindow.width;
+                        duration: 150 }
+                }
 
-                    function addWindow(item) {
-                        d.windows.push(item)
-                        d.activeWindowIndex = d.windows.length - 1
-                        relayoutWindows();
-                    }
-
-                    function removeWindow(item) {
-                        var index = d.windows.indexOf(item)
-                        if (index != -1) {
-                            d.windows.splice(index, 1);
-                            if (d.activeWindowIndex == index) d.activeWindowIndex = 0
-                            relayoutWindows();
-                        }
-                    }
-
-                    function moveLeft() {
-                        if (settings.wrapAroundNavigation) {
-                            d.activeWindowIndex = d.activeWindowIndex == 0 ? d.windows.length - 1 : d.activeWindowIndex - 1
-                        } else {
-                            d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
-                        }
-                        updateIndex()
-                    }
-
-                    function moveRight() {
-                        if (settings.wrapAroundNavigation) {
-                            d.activeWindowIndex = (d.activeWindowIndex + 1)%d.windows.length
-                        } else {
-                            d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);
-                        }
-                        updateIndex()
-                    }
-
-                    width: childrenRect.width
-                    height: childrenRect.height
-                    Component.onCompleted: uberItem = this
-
+                SequentialAnimation {
+                    id: zoomAnimation
                     ParallelAnimation {
-                        id: indexChangedAnimation
-                        SmoothedAnimation {
-                            target: scaleTransform;
-                            property: "origin.x";
-                            to: d.activeWindowIndex*compositorWindow.width + compositorWindow.width/2;
-                            duration: 150 }
-                        SmoothedAnimation {
-                            target: topItem;
-                            property: "x";
-                            to: -d.activeWindowIndex*compositorWindow.width;
-                            duration: 150 }
+                        NumberAnimation { target: scaleTransform; property: "yScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
+                        NumberAnimation { target: scaleTransform; property: "xScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
                     }
+                }
 
-                    SequentialAnimation {
-                        id: zoomAnimation
-                        ParallelAnimation {
-                            NumberAnimation { target: scaleTransform; property: "yScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
-                            NumberAnimation { target: scaleTransform; property: "xScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
+                transform: [
+                    Scale {
+                        id:scaleTransform
+                        origin.y: compositorWindow.height/2
+                    }
+                ]
+
+                Keys.onPressed: {
+                    // console.log('Received key press:' + event.key)
+                    if (event.key == Qt.Key_Escape) {
+                        toggleZoom()
+                        event.accepted = true;
+                    } else if ((event.modifiers & Qt.ControlModifier) && (event.modifiers & Qt.AltModifier)) {
+                        if (event.key == Qt.Key_Left) {
+                            moveLeft()
+                        } else if (event.key == Qt.Key_Right) {
+                            moveRight()
+                        } else if (event.key == Qt.Key_Up) {
+                            d.windows[d.activeWindowIndex].surface.client.kill()
+                        } else if (event.key == Qt.Key_Backspace) {
+                            Qt.quit()
                         }
                     }
 
-                    transform: [
-                        Scale {
-                            id:scaleTransform
-                            origin.y: compositorWindow.height/2
-                        }
-                    ]
-
-                    Keys.onPressed: {
-                        // console.log('Received key press:' + event.key)
-                        if (event.key == Qt.Key_Escape) {
+                    if(d.zoomed) {
+                        if (event.key == Qt.Key_Left) {
+                            moveLeft()
+                        } else if (event.key == Qt.Key_Right) {
+                            moveRight()
+                        } else if (event.key == Qt.Key_Return
+                                   || event.key == Qt.Key_Down) {
                             toggleZoom()
-                            event.accepted = true;
-                        } else if ((event.modifiers & Qt.ControlModifier) && (event.modifiers & Qt.AltModifier)) {
-                            if (event.key == Qt.Key_Left) {
-                                moveLeft()
-                            } else if (event.key == Qt.Key_Right) {
-                                moveRight()
-                            } else if (event.key == Qt.Key_Up) {
-                                d.windows[d.activeWindowIndex].surface.client.kill()
-                            } else if (event.key == Qt.Key_Backspace) {
-                                Qt.quit()
-                            }
+                        } else if (event.key == Qt.Key_Up) {
+                            d.windows[d.activeWindowIndex].surface.client.kill()
+                        } else if (event.key == Qt.Key_PageUp) {
+                            d.windows[d.activeWindowIndex].opacity *= 1.10
+                        } else if (event.key == Qt.Key_PageDown) {
+                            d.windows[d.activeWindowIndex].opacity *= 0.90
                         }
-
-                        if(d.zoomed) {
-                            if (event.key == Qt.Key_Left) {
-                                moveLeft()
-                            } else if (event.key == Qt.Key_Right) {
-                                moveRight()
-                            } else if (event.key == Qt.Key_Return
-                                       || event.key == Qt.Key_Down) {
-                                toggleZoom()
-                            } else if (event.key == Qt.Key_Up) {
-                                d.windows[d.activeWindowIndex].surface.client.kill()
-                            } else if (event.key == Qt.Key_PageUp) {
-                                d.windows[d.activeWindowIndex].opacity *= 1.10
-                            } else if (event.key == Qt.Key_PageDown) {
-                                d.windows[d.activeWindowIndex].opacity *= 0.90
-                            }
-                            event.accepted = true;
-                        }
+                        event.accepted = true;
                     }
                 }
             }
