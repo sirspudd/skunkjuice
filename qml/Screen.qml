@@ -54,7 +54,7 @@ import QtWayland.Compositor 1.0
 
 WaylandOutput {
     id: output
-    property alias surfaceArea: background
+    property alias surfaceArea: stage
     sizeFollowsWindow: true
     window: Window {
         id: screen
@@ -70,12 +70,8 @@ WaylandOutput {
             anchors.fill: parent
 
             windowSystemCursorEnabled: true
-            Image {
-                id: background
-                anchors.fill: parent
-                fillMode: Image.Tile
-                source: "qrc:/images/background.jpg"
-                smooth: true
+            Item {
+                id: stage
             }
             Loader {
                 anchors.fill: parent
