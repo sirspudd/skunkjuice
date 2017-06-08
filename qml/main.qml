@@ -51,6 +51,7 @@
 import QtQuick 2.0
 import QtWayland.Compositor 1.0
 import Qt.labs.settings 1.0
+import "util.js" as Util
 
 WaylandCompositor {
     id: comp
@@ -58,36 +59,39 @@ WaylandCompositor {
     property var uberItem
     property var compositorWindow
 
+
     Settings {
         id: settings
 
+        property bool wrapAroundNavigation: false
         property bool animatedBackground: true
 
-        property bool resizeClients: false
-        property bool resizeByRatio: false
-
-        // Solely introducing this because of the cool-retro-term
-        // QOpenGLFramebufferObject: Framebuffer incomplete attachment
-        property real clientResizingFactor: 0.9
-
+        property int sizePolicy: Util.SizePolicy.Resize
         property int defaultClientSurfaceWidth: 1280
         property int defaultClientSurfaceHeight: 720
-
-        property bool wrapAroundNavigation: false
     }
 
     Item {
         id: globalUtil
 
-        function clientSize() {
-            if (!settings.resizeClients) {
-                return Qt.size(compositorWindow.width,compositorWindow.height)
-            } else {
-                if (settings.resizeByRatio) {
-                    return Qt.size(compositorWindow.width*settings.clientResizingFactor, compositorWindow.height*settings.clientResizingFactor)
-                } else {
-                    return Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight)
-                }
+        property real scaleFactor
+
+        function clientSize(client) {
+            switch(settings.sizePolicy) {
+            case Util.SizePolicy.Resize:
+                return Qt.size(compositorWindow.width,compositorWindow.height);
+                break;
+            case Util.SizePolicy.ResizeScale:
+                scaleFactor = compositorWindow.width/settings.defaultClientSurfaceWidth;
+                return Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight);
+                break;
+            case Util.SizePolicy.Scale:
+                scaleFactor = Math.min(compositorWindow.width/client.width, compositorWindow.height/client.height);
+                return Qt.size(client.width, client.height);
+                break;
+            default:
+                console.log('Unhandled sized policy enumeration')
+                break;
             }
         }
     }
@@ -95,9 +99,9 @@ WaylandCompositor {
     function initializeSurface(item) {
         item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } );
         item.destructionComplete.connect(function() { uberItem.removeWindow(item) });
-        if (settings.resizeClients) {
+        if (settings.sizePolicy != Util.SizePolicy.Resize) {
             item.transformOrigin = Item.TopLeft;
-            item.scale = settings.resizeByRatio ? 1/settings.clientResizingFactor : compositorWindow.width/settings.defaultClientSurfaceWidth;
+            item.scale = globalUtil.scaleFactor;
         }
     }
 
