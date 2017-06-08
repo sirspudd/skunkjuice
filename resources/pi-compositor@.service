@@ -1,0 +1,19 @@
+# Forked off xlogin@.service
+
+[Unit]
+Description=Qt-compositor login for user %i
+After=systemd-user-sessions.service
+Conflicts=getty@tty7.service
+
+[Service]
+User=%i
+WorkingDirectory=~
+TTYPath=/dev/tty7
+PAMName=login
+ExecStart=-/opt/pi-compositor/pi-compositor -platform eglfs
+Restart=on-failure
+Environment=QT_WAYLAND_CLIENT_BUFFER_INTEGRATION=brcm
+
+[Install]
+WantedBy=graphical.target
+Alias=display-manager.service
