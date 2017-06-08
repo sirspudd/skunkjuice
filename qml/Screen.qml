@@ -130,7 +130,7 @@ WaylandOutput {
                     }
 
                     function moveLeft() {
-                        if (globalUtil.settings.wrapAroundNavigation) {
+                        if (settings.wrapAroundNavigation) {
                             d.activeWindowIndex = d.activeWindowIndex == 0 ? d.windows.length - 1 : d.activeWindowIndex - 1
                         } else {
                             d.activeWindowIndex = Math.max(d.activeWindowIndex - 1, 0);
@@ -139,7 +139,7 @@ WaylandOutput {
                     }
 
                     function moveRight() {
-                        if (globalUtil.settings.wrapAroundNavigation) {
+                        if (settings.wrapAroundNavigation) {
                             d.activeWindowIndex = (d.activeWindowIndex + 1)%d.windows.length
                         } else {
                             d.activeWindowIndex = Math.min(d.activeWindowIndex + 1, d.windows.length - 1);

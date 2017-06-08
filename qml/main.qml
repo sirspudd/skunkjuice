@@ -58,21 +58,23 @@ WaylandCompositor {
     property var uberItem
     property var compositorWindow
 
+    Settings {
+        id: settings
+        property bool resizeClients: false
+        property bool resizeByRatio: false
+
+        // Solely introducing this because of the cool-retro-term
+        // QOpenGLFramebufferObject: Framebuffer incomplete attachment
+        property real clientResizingFactor: 0.9
+
+        property int defaultClientSurfaceWidth: 1280
+        property int defaultClientSurfaceHeight: 720
+
+        property bool wrapAroundNavigation: false
+    }
+
     Item {
         id: globalUtil
-        property var settings: Settings {
-            property bool resizeClients: false
-            property bool resizeByRatio: false
-
-            // Solely introducing this because of the cool-retro-term
-            // QOpenGLFramebufferObject: Framebuffer incomplete attachment
-            property real clientResizingFactor: 0.9
-
-            property int defaultClientSurfaceWidth: 1280
-            property int defaultClientSurfaceHeight: 720
-
-            property bool wrapAroundNavigation: false
-        }
 
         function clientSize() {
             if (!settings.resizeClients) {
@@ -84,6 +86,15 @@ WaylandCompositor {
                     return Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight)
                 }
             }
+        }
+    }
+
+    function initializeSurface(item) {
+        item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } );
+        item.destructionComplete.connect(function() { uberItem.removeWindow(item) });
+        if (settings.resizeClients) {
+            item.transformOrigin = Item.TopLeft;
+            item.scale = settings.resizeByRatio ? 1/settings.clientResizingFactor : compositorWindow.width/settings.defaultClientSurfaceWidth;
         }
     }
 
@@ -110,18 +121,14 @@ WaylandCompositor {
 
     WlShell {
         onWlShellSurfaceCreated: {
-            var item = chromeComponent.createObject(uberItem, { "shellSurface": shellSurface } );
-            item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
-            item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
+            initializeSurface(chromeComponent.createObject(uberItem, { "shellSurface": shellSurface } ));
         }
     }
 
     XdgShellV5 {
 //        property variant viewsBySurface: ({})
         onXdgSurfaceCreated: {
-            var item = chromeComponent.createObject(uberItem, { "shellSurface": xdgSurface } );
-            item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
-            item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
+            initializeSurface(chromeComponent.createObject(uberItem, { "shellSurface": xdgSurface } ));
 
 //            viewsBySurface[xdgSurface.surface] = item;
         }

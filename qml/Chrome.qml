@@ -64,8 +64,6 @@ ShellSurfaceItem {
             visible = false
         } else {
             rootChrome.shellSurface.sendConfigure(globalUtil.clientSize(), 0)
-            width = compositorWindow.width
-            height = compositorWindow.height
             visible = true
         }
     }
