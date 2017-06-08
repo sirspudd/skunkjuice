@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     QGuiApplication app(argc, argv);
+    app.setOrganizationName("QPi");
 
     QQmlApplicationEngine appEngine;
     appEngine.addImportPath("qrc:///qml");
