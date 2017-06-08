@@ -50,11 +50,42 @@
 
 import QtQuick 2.0
 import QtWayland.Compositor 1.0
+import Qt.labs.settings 1.0
 
 WaylandCompositor {
     id: comp
 
-    property var primarySurfacesArea: null
+    property var uberItem
+    property var compositorWindow
+
+    Item {
+        id: globalUtil
+        property var settings: Settings {
+            property bool resizeClients: true
+            property bool resizeByRatio: false
+
+            // Solely introducing this because of the cool-retro-term
+            // QOpenGLFramebufferObject: Framebuffer incomplete attachment
+            property real clientResizingFactor: 0.9
+
+            property int defaultClientSurfaceWidth: 1280
+            property int defaultClientSurfaceHeight: 720
+
+            property bool wrapAroundNavigation: false
+        }
+
+        function clientSize() {
+            if (!settings.resizeClients) {
+                return Qt.size(compositorWindow.width,compositorWindow.height)
+            } else {
+                if (settings.resizeByRatio) {
+                    return Qt.size(compositorWindow.width*settings.clientResizingFactor, compositorWindow.height*settings.clientResizingFactor)
+                } else {
+                    return Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight)
+                }
+            }
+        }
+    }
 
     Screen {
         compositor: comp
@@ -79,21 +110,26 @@ WaylandCompositor {
 
     WlShell {
         onWlShellSurfaceCreated: {
-            chromeComponent.createObject(defaultOutput.surfaceArea, { "shellSurface": shellSurface } );
+            var item = chromeComponent.createObject(uberItem, { "shellSurface": shellSurface } );
+            item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
+            item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
         }
     }
 
     XdgShellV5 {
-        property variant viewsBySurface: ({})
+//        property variant viewsBySurface: ({})
         onXdgSurfaceCreated: {
-            var item = chromeComponent.createObject(defaultOutput.surfaceArea, { "shellSurface": xdgSurface } );
-            viewsBySurface[xdgSurface.surface] = item;
+            var item = chromeComponent.createObject(uberItem, { "shellSurface": xdgSurface } );
+            item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } )
+            item.destructionComplete.connect(function() { uberItem.removeWindow(item) })
+
+//            viewsBySurface[xdgSurface.surface] = item;
         }
-        onXdgPopupCreated: {
-            var parentView = viewsBySurface[xdgPopup.parentSurface];
-            var item = chromeComponent.createObject(parentView, { "shellSurface": xdgPopup } );
-            viewsBySurface[xdgPopup.surface] = item;
-        }
+//        onXdgPopupCreated: {
+//            var parentView = viewsBySurface[xdgPopup.parentSurface];
+//            var item = chromeComponent.createObject(parentView, { "shellSurface": xdgPopup } );
+//            viewsBySurface[xdgPopup.surface] = item;
+//        }
     }
 
     TextInputManager {

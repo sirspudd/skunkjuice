@@ -1,22 +1,12 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
+** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -54,11 +44,34 @@ import QtWayland.Compositor 1.0
 ShellSurfaceItem {
     id: rootChrome
 
-    property bool isChild: parent.shellSurface !== undefined
+    signal destructionComplete;
+
+    visible: false
+
+    function appear() {
+        creationAnimation.start()
+    }
+
+    function vanish() {
+        bufferLocked = true;
+        visible ? destroyAnimation.start() : 0
+    }
+
+    onVisibleChanged: visible ? appear() : vanish()
+
+    onWidthChanged: {
+        if (width == -1) {
+            visible = false
+        } else {
+            rootChrome.shellSurface.sendConfigure(globalUtil.clientSize(), 0)
+            width = compositorWindow.width
+            height = compositorWindow.height
+            visible = true
+        }
+    }
 
     onSurfaceDestroyed: {
-        bufferLocked = true;
-        destroyAnimation.start();
+        vanish();
     }
 
     Connections {
@@ -74,27 +87,35 @@ ShellSurfaceItem {
         }
     }
 
+    /* divide by zero!
+    Behavior on x {
+        SpringAnimation { spring: 2; damping: 0.2; duration: 150 }
+    }*/
+
+    Behavior on x {
+        SmoothedAnimation { duration: 150 }
+    }
+
+    SequentialAnimation {
+        id: creationAnimation
+
+        PropertyAction { target: scaleTransform; property: "xScale"; value: 0.0 }
+        PropertyAction { target: scaleTransform; property: "yScale"; value: 2/height }
+        NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.4; duration: 150 }
+        ParallelAnimation {
+            NumberAnimation { target: scaleTransform; property: "yScale"; to: 1; duration: 150 }
+            NumberAnimation { target: scaleTransform; property: "xScale"; to: 1; duration: 150 }
+        }
+    }
+
     SequentialAnimation {
         id: destroyAnimation
         ParallelAnimation {
             NumberAnimation { target: scaleTransform; property: "yScale"; to: 2/height; duration: 150 }
             NumberAnimation { target: scaleTransform; property: "xScale"; to: 0.4; duration: 150 }
-            NumberAnimation { target: rootChrome; property: "opacity"; to: rootChrome.isChild ? 0 : 1; duration: 150 }
         }
         NumberAnimation { target: scaleTransform; property: "xScale"; to: 0; duration: 150 }
-        ScriptAction { script: { rootChrome.destroy(); } }
-    }
-
-    SequentialAnimation {
-        id: receivedFocusAnimation
-        ParallelAnimation {
-            NumberAnimation { target: scaleTransform; property: "yScale"; to: 1.02; duration: 100; easing.type: Easing.OutQuad }
-            NumberAnimation { target: scaleTransform; property: "xScale"; to: 1.02; duration: 100; easing.type: Easing.OutQuad }
-        }
-        ParallelAnimation {
-            NumberAnimation { target: scaleTransform; property: "yScale"; to: 1; duration: 100; easing.type: Easing.InOutQuad }
-            NumberAnimation { target: scaleTransform; property: "xScale"; to: 1; duration: 100; easing.type: Easing.InOutQuad }
-        }
+        ScriptAction { script: { destructionComplete(); rootChrome.destroy(); } }
     }
 
     transform: [
@@ -104,4 +125,6 @@ ShellSurfaceItem {
             origin.y: rootChrome.height / 2
         }
     ]
+
+    Keys.forwardTo: uberItem
 }
