@@ -61,15 +61,17 @@ WaylandOutput {
 
         property QtObject output
 
-        width: 1024
-        height: 760
-        visible: true
+        visibility: Window.FullScreen
 
         WaylandMouseTracker {
             id: mouseTracker
             anchors.fill: parent
 
             windowSystemCursorEnabled: true
+            BackgroundSwirls {
+
+            }
+
             Item {
                 id: stage
             }

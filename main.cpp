@@ -69,7 +69,9 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    QQmlApplicationEngine appEngine(QUrl("qrc:///qml/main.qml"));
+    QQmlApplicationEngine appEngine;
+    appEngine.addImportPath("qrc:///qml");
+    appEngine.load(QUrl("qrc:///qml/main.qml"));
 
     return app.exec();
 }
