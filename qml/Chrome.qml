@@ -63,7 +63,10 @@ ShellSurfaceItem {
         if (width == -1) {
             visible = false
         } else {
-            rootChrome.shellSurface.sendConfigure(globalUtil.clientSize(), 0)
+            var size = globalUtil.clientSize()
+            if (width != size.width) {
+                rootChrome.shellSurface.sendConfigure(globalUtil.clientSize(), 0)
+            }
             visible = true
         }
     }
