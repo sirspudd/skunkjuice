@@ -181,9 +181,20 @@ WaylandOutput {
                     ]
 
                     Keys.onPressed: {
-                        if (event.key == Qt.Key_F1) {
+                        // console.log('Received key press:' + event.key)
+                        if (event.key == Qt.Key_Escape) {
                             toggleZoom()
                             event.accepted = true;
+                        } else if ((event.modifiers & Qt.ControlModifier) && (event.modifiers & Qt.AltModifier)) {
+                            if (event.key == Qt.Key_Left) {
+                                moveLeft()
+                            } else if (event.key == Qt.Key_Right) {
+                                moveRight()
+                            } else if (event.key == Qt.Key_Up) {
+                                d.windows[d.activeWindowIndex].surface.client.kill()
+                            } else if (event.key == Qt.Key_Backspace) {
+                                Qt.quit()
+                            }
                         }
 
                         if(d.zoomed) {
@@ -192,7 +203,6 @@ WaylandOutput {
                             } else if (event.key == Qt.Key_Right) {
                                 moveRight()
                             } else if (event.key == Qt.Key_Return
-                                       || event.key == Qt.Key_Escape
                                        || event.key == Qt.Key_Down) {
                                 toggleZoom()
                             } else if (event.key == Qt.Key_Up) {
@@ -219,28 +229,6 @@ WaylandOutput {
 
                 seat: output.compositor.defaultSeat
             }
-        }
-
-
-
-        Shortcut {
-            sequence: "Ctrl+Alt+Right"
-            onActivated: uberItem.moveRight()
-        }
-
-        Shortcut {
-            sequence: "Ctrl+Alt+Left"
-            onActivated: uberItem.moveLeft()
-        }
-
-        Shortcut {
-            sequence: "Ctrl+Alt+Up"
-            onActivated: uberItem.toggleZoom()
-        }
-
-        Shortcut {
-            sequence: "Ctrl+Alt+Backspace"
-            onActivated: Qt.quit()
         }
 
         Component.onCompleted: compositorWindow = this
