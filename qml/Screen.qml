@@ -59,8 +59,6 @@ WaylandOutput {
     window: Window {
         id: screen
 
-        property QtObject output
-
         visibility: Window.FullScreen
 
         WaylandMouseTracker {
@@ -69,7 +67,6 @@ WaylandOutput {
 
             windowSystemCursorEnabled: true
             BackgroundSwirls {
-
             }
 
             Item {
@@ -87,11 +84,6 @@ WaylandOutput {
 
                 seat: output.compositor.defaultSeat
             }
-        }
-
-        Shortcut {
-            sequence: "Meta+F"
-            onActivated: qtWindowManager.showIsFullScreen = !qtWindowManager.showIsFullScreen
         }
 
         Shortcut {
