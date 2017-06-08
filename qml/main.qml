@@ -61,7 +61,7 @@ WaylandCompositor {
     Item {
         id: globalUtil
         property var settings: Settings {
-            property bool resizeClients: true
+            property bool resizeClients: false
             property bool resizeByRatio: false
 
             // Solely introducing this because of the cool-retro-term
