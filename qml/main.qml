@@ -51,7 +51,6 @@
 import QtQuick 2.0
 import QtWayland.Compositor 1.0
 import Qt.labs.settings 1.0
-import "util.js" as Util
 
 WaylandCompositor {
     id: comp
@@ -66,7 +65,7 @@ WaylandCompositor {
         property bool wrapAroundNavigation: false
         property bool animatedBackground: true
 
-        property int sizePolicy: Util.SizePolicy.Resize
+        property string sizePolicy: "Resize"
         property int defaultClientSurfaceWidth: 1280
         property int defaultClientSurfaceHeight: 720
     }
@@ -74,32 +73,17 @@ WaylandCompositor {
     Item {
         id: globalUtil
 
-        property real scaleFactor
+        property real scaleFactor: 1
 
         function clientSize(client) {
-            switch(settings.sizePolicy) {
-            case Util.SizePolicy.Resize:
-                return Qt.size(compositorWindow.width,compositorWindow.height);
-                break;
-            case Util.SizePolicy.ResizeScale:
-                scaleFactor = compositorWindow.width/settings.defaultClientSurfaceWidth;
-                return Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight);
-                break;
-            case Util.SizePolicy.Scale:
-                scaleFactor = Math.min(compositorWindow.width/client.width, compositorWindow.height/client.height);
-                return Qt.size(client.width, client.height);
-                break;
-            default:
-                console.log('Unhandled sized policy enumeration')
-                break;
-            }
+
         }
     }
 
     function initializeSurface(item) {
         item.visibleChanged.connect(function() { item.visible ? uberItem.addWindow(item) : uberItem.removeWindow(item) } );
         item.destructionComplete.connect(function() { uberItem.removeWindow(item) });
-        if (settings.sizePolicy != Util.SizePolicy.Resize) {
+        if ((1 - Math.abs(globalUtil.scaleFactor)) > 0.1) {
             item.transformOrigin = Item.TopLeft;
             item.scale = globalUtil.scaleFactor;
         }

@@ -98,6 +98,10 @@ WaylandOutput {
                     property int activeWindowIndex: -1
 
                     property bool zoomed: false
+
+                    function viewportX() {
+                        return d.activeWindowIndex*compositorWindow.width;
+                    }
                 }
 
                 function updateIndex() {
@@ -107,11 +111,13 @@ WaylandOutput {
 
                 function toggleZoom() {
                     d.zoomed = !d.zoomed
-                    zoomAnimation.start()
                 }
 
                 function relayoutWindows() {
-                    d.windows.forEach(function(w,i) { w.x = i*compositorWindow.width; } )
+                    d.windows.forEach(function(w,i) {
+                        w.y = (compositorWindow.height - w.height)/2;
+                        w.x = i*compositorWindow.width + (compositorWindow.width - w.width)/2;
+                    } )
                     updateIndex();
                 }
 
@@ -158,20 +164,24 @@ WaylandOutput {
                     SmoothedAnimation {
                         target: scaleTransform;
                         property: "origin.x";
-                        to: d.activeWindowIndex*compositorWindow.width + compositorWindow.width/2;
+                        to: d.viewportX() + compositorWindow.width/2;
                         duration: 150 }
                     SmoothedAnimation {
                         target: topItem;
                         property: "x";
-                        to: -d.activeWindowIndex*compositorWindow.width;
+                        to: -d.viewportX();
                         duration: 150 }
                 }
 
-                SequentialAnimation {
-                    id: zoomAnimation
+                states: State {
+                    name: "zoomed"; when: d.zoomed
+                    PropertyChanges { target: scaleTransform; xScale: 0.75; yScale: 0.75 }
+                }
+
+                transitions: Transition {
                     ParallelAnimation {
-                        NumberAnimation { target: scaleTransform; property: "yScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
-                        NumberAnimation { target: scaleTransform; property: "xScale"; to: d.zoomed ? 0.75 : 1.00; duration: 150 }
+                        NumberAnimation { target: scaleTransform; property: "yScale"; duration: 150 }
+                        NumberAnimation { target: scaleTransform; property: "xScale"; duration: 150 }
                     }
                 }
 

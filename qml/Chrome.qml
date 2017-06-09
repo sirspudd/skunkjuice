@@ -63,10 +63,24 @@ ShellSurfaceItem {
         if (width == -1) {
             visible = false
         } else {
-            var size = globalUtil.clientSize(rootChrome)
-            if (width != size.width) {
-                rootChrome.shellSurface.sendConfigure(globalUtil.clientSize(), 0)
+            var windowSize
+            switch(settings.sizePolicy) {
+            case "Resize":
+                windowSize = Qt.size(compositorWindow.width,compositorWindow.height);
+                break;
+            case "ResizeScale":
+                globalUtil.scaleFactor = compositorWindow.width/settings.defaultClientSurfaceWidth;
+                windowSize = Qt.size(settings.defaultClientSurfaceWidth, settings.defaultClientSurfaceHeight);
+                break;
+            case "Scale":
+                globalUtil.scaleFactor = Math.min(compositorWindow.width/width, compositorWindow.height/height);
+                break;
+            default:
+                break;
             }
+
+            !!windowSize && rootChrome.shellSurface.sendConfigure(windowSize,0);
+
             visible = true
         }
     }
