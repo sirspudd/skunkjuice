@@ -63,10 +63,37 @@ WaylandOutput {
         visibility: Window.FullScreen
 
         Item {
+            id: clock
+            anchors.fill: parent
+            visible: !animatedBackground.visible
+
+            property string timeString
+
+            function timeChanged() {
+                var date = new Date;
+                clock.timeString = Qt.formatDateTime(date, "hh:mm:ss")
+            }
+
+            Text {
+                anchors.centerIn: parent
+                font.pixelSize: screen.height/4
+                font.bold: true
+                color: "white"
+                text: clock.timeString
+            }
+
+            Timer {
+                interval: 1000; running: true; repeat: true;
+                onTriggered: clock.timeChanged()
+            }
+        }
+
+        Item {
+            id: animatedBackground
             anchors.fill: parent
 
             visible: settings.animatedBackground
-            enabled: settings.animatedBackground
+
             BackgroundSwirls {
                 anchors.fill: parent
                 opacity: 1.0 - parlourTrickCurtain.opacity

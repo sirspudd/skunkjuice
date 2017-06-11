@@ -63,7 +63,7 @@ WaylandCompositor {
         id: settings
 
         property bool wrapAroundNavigation: false
-        property bool animatedBackground: true
+        property bool animatedBackground: false
 
         property string sizePolicy: "Resize"
         property int defaultClientSurfaceWidth: 1280
