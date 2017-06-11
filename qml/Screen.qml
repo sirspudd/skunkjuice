@@ -153,6 +153,7 @@ WaylandOutput {
                     d.activeWindowIndex = d.windows.length - 1
                     relayoutWindows();
                     d.zoomed = false
+                    item.widthChanged.connect(function() { relayoutWindows() })
                 }
 
                 function removeWindow(item) {
