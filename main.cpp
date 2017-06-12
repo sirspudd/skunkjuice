@@ -48,6 +48,8 @@
 **
 ****************************************************************************/
 
+#include <unistd.h>
+
 #include <QtCore/QUrl>
 #include <QtCore/QDebug>
 
@@ -55,7 +57,63 @@
 
 #include <QtQml/QQmlApplicationEngine>
 
+#include <QQmlContext>
+
 #include <QSurfaceFormat>
+
+#include <QTimer>
+#include <QNetworkInterface>
+#include <QHostAddress>
+
+class NativeUtil : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString ipAddress MEMBER ipAddress NOTIFY ipAddressChanged)
+
+public:
+    NativeUtil()
+        : QObject()
+    {
+        establishIpAddress();
+    }
+
+Q_SIGNALS:
+    void ipAddressChanged();
+
+public Q_SLOTS:
+    void establishIpAddress()
+    {
+        bool ifUp = false;
+        bool validIP = false;
+
+        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+            if ((interface.flags() & QNetworkInterface::IsUp)
+                    && (interface.flags() & QNetworkInterface::IsRunning)
+                    && !(interface.flags() & QNetworkInterface::IsLoopBack)) {
+                ifUp = true;
+                qDebug() << "Established network interface" << interface.name() << "is up and ready to be queried";
+            }
+        }
+
+        if (ifUp) {
+            foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+                if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost)) {
+                    validIP = true;
+                    ipAddress = address.toString();
+                    emit ipAddressChanged();
+                    continue;
+                }
+            }
+        }
+
+        if (!validIP) {
+            QTimer::singleShot(1000, this, &NativeUtil::establishIpAddress);
+            return;
+        }
+    }
+
+private:
+    QString ipAddress;
+};
 
 int main(int argc, char *argv[])
 {
@@ -70,9 +128,14 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     app.setOrganizationName("Chaos Reins");
 
+    NativeUtil nativeUtils;
+
     QQmlApplicationEngine appEngine;
+    appEngine.rootContext()->setContextProperty("nativeUtils", &nativeUtils);
     appEngine.addImportPath("qrc:///qml");
     appEngine.load(QUrl("qrc:///qml/main.qml"));
 
     return app.exec();
 }
+
+#include "main.moc"

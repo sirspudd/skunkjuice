@@ -82,6 +82,20 @@ WaylandOutput {
                 text: clock.timeString
             }
 
+            Text {
+                anchors { right: parent.right; top: parent.top }
+                font.pixelSize: screen.height/16
+                color: "white"
+                text: screen.width + "x" + screen.height
+            }
+
+            Text {
+                anchors { right: parent.right; bottom: parent.bottom }
+                font.pixelSize: screen.height/16
+                color: "white"
+                text: nativeUtils.ipAddress
+            }
+
             Timer {
                 interval: 1000; running: true; repeat: true;
                 onTriggered: clock.timeChanged()
