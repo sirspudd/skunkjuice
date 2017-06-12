@@ -124,6 +124,7 @@ WaylandOutput {
                     property var windows: []
                     property int activeWindowIndex: -1
 
+                    property real zoomFactor: 0.5
                     property bool zoomed: false
 
                     function viewportX() {
@@ -203,14 +204,11 @@ WaylandOutput {
 
                 states: State {
                     name: "zoomed"; when: d.zoomed
-                    PropertyChanges { target: scaleTransform; xScale: 0.75; yScale: 0.75 }
+                    PropertyChanges { target: scaleTransform; xScale: d.zoomFactor; yScale: d.zoomFactor }
                 }
 
                 transitions: Transition {
-                    ParallelAnimation {
-                        NumberAnimation { target: scaleTransform; property: "yScale"; duration: 150 }
-                        NumberAnimation { target: scaleTransform; property: "xScale"; duration: 150 }
-                    }
+                    NumberAnimation { target: scaleTransform; properties: "xScale,yScale"; duration: 150 }
                 }
 
                 transform: [
