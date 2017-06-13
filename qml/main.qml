@@ -74,10 +74,6 @@ WaylandCompositor {
         id: globalUtil
 
         property real scaleFactor: 1
-
-        function clientSize(client) {
-
-        }
     }
 
     function initializeSurface(item) {
