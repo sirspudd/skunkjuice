@@ -82,32 +82,16 @@ Q_SIGNALS:
 public Q_SLOTS:
     void establishIpAddress()
     {
-        bool ifUp = false;
-        bool validIP = false;
-
-        foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
-            if ((interface.flags() & QNetworkInterface::IsUp)
-                    && (interface.flags() & QNetworkInterface::IsRunning)
-                    && !(interface.flags() & QNetworkInterface::IsLoopBack)) {
-                ifUp = true;
-                qDebug() << "Established network interface" << interface.name() << "is up and ready to be queried";
+        foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+            if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost)) {
+                ipAddress = address.toString();
+                emit ipAddressChanged();
+                continue;
             }
         }
 
-        if (ifUp) {
-            foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
-                if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost)) {
-                    validIP = true;
-                    ipAddress = address.toString();
-                    emit ipAddressChanged();
-                    continue;
-                }
-            }
-        }
-
-        if (!validIP) {
-            QTimer::singleShot(1000, this, &NativeUtil::establishIpAddress);
-            return;
+        if (ipAddress.isEmpty()) {
+            QTimer::singleShot(5000, this, &NativeUtil::establishIpAddress);
         }
     }
 
