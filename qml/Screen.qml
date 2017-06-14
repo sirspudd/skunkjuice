@@ -59,8 +59,7 @@ WaylandOutput {
     window: Window {
         id: screen
 
-        property bool unstableResolution: width > 1280
-        color: unstableResolution ? "red" : "black"
+        color: "black"
         visibility: Window.FullScreen
 
         Item {
@@ -95,14 +94,6 @@ WaylandOutput {
                 font.pixelSize: screen.height/16
                 color: "white"
                 text: nativeUtils.ipAddress
-            }
-
-            Text {
-                visible: screen.unstableResolution
-                anchors { left: parent.left; bottom: parent.bottom }
-                font.pixelSize: screen.height/16
-                color: "white"
-                text: "Unstable Qt Wayland Pi resolution"
             }
 
             Timer {
