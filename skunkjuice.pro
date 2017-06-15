@@ -10,5 +10,3 @@ OTHER_FILES = \
     qml/Keyboard.qml
 
 RESOURCES += pure-qml.qrc
-
-TARGET=pi-compositor
