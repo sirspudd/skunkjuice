@@ -10,7 +10,7 @@ User=%i
 WorkingDirectory=~
 TTYPath=/dev/tty7
 PAMName=login
-ExecStart=-/opt/pi-compositor/pi-compositor -platform eglfs
+ExecStart=-/opt/skunkjuice/skunkjuice -platform eglfs
 Restart=on-failure
 Environment=QT_WAYLAND_CLIENT_BUFFER_INTEGRATION=brcm
 
